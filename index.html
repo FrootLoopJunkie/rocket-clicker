@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="code/index.js"></script>
+    <link rel="stylesheet" href="code/index.css">
+    <link rel="shortcut icon" href="images/rocket.png">
+    <title>Rocket Clicker</title>
+</head>
+<body>
+    <div id="mainContainer">
+        <div id="imageContainer">
+            <canvas id="myChart" width="400" height="400"></canvas>
+            Image
+        </div>
+        <div id="newsContainer">
+            News
+        </div>
+        <div id="clickerContainer">
+            <img src="images/rocket.png" id="clicker"></img>
+            <div id="incomeStats">
+                Moonbucks: 0.00 Current Output: 0.00
+            </div>
+        </div>
+        <div id="buildingsContainer">
+            <table id="buildingsTable">
+                <tr id=buildingsTableR1>
+                   <th colspan="3">Buildings</th> 
+                </tr>
+                <tr id=buildingsTableR2>
+                    <td class="building" id="1">Homemade Rocket <span class="buildingStats" id="1stats"><br>Test</span></td>
+                    <td class="building" id="2">Backyard Scientist <span class="buildingStats" id="2stats"><br>Test</span></td>
+                    <td class="building" id="3" hidden=true>Fuel Refinery <span class="buildingStats" id="3stats"><br>Test</span></td>
+                </tr>
+                <tr id=buildingsTableR3>
+                    <td class="building" id="4" hidden=true>Rocket Assembly Building <span class="buildingStats" id="4stats"><br>Test</span></td>
+                    <td class="building" id="5" hidden=true>Launchpad <span class="buildingStats" id="5stats"><br>Test</span></td>
+                    <td class="building" id="6" hidden=true>PR Team <span class="buildingStats" id="6stats"><br>Test</span></td>
+                </tr>
+                <tr id=buildingsTableR4>
+                    <td class="building" id="7" hidden=true>Satellite <span class="buildingStats" id="7stats"><br>Test</span></td>
+                    <td class="building" id="8" hidden=true>Space Station <span class="buildingStats" id="8stats"><br>Test</span></td>
+                    <td class="building" id="9" hidden=true>Moon Base <span class="buildingStats" id="9stats"><br>Test</span></td>
+                </tr>
+            </table>
+        </div>
+        <div id=buyAmountContainer>
+            <table id=buyAmountTable>
+                <tr id=buyAmountTableR1>
+                    <th colspan="4">Buy Amount</th> 
+                 </tr>
+                <tr id=buyAmountTableR2>
+                    <td class="buyAmount" >1</td>
+                    <td class="buyAmount" >10</td>
+                    <td class="buyAmount" >100</td>
+                    <td class="buyAmount" >Max</td>
+                </tr>
+            </table>
+        </div>
+        <div id="upgradesContainer">
+            Upgrades
+        </div>
+        <div id="optionsContainer">
+            Options
+        </div>
+    </div>
+</body>
+</html>
