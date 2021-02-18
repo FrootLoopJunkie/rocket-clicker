@@ -10,7 +10,19 @@
 }
 
 body {
+    background-image: url("../images/background.jpg");
+    background-size: cover;
+}
+
+#centerBar {
     background : black;
+    position : absolute;
+    top: 0;
+    left: 8%;
+    width : 84%;
+    height : 80vh;
+    border-radius : 20px;
+
 }
 
 .button{
@@ -33,7 +45,7 @@ body {
     position : absolute;
     width: 30%;
     height: 7%;
-    left : 62%;
+    left : 61%;
     top : 51%;
     text-align: center;
 }
@@ -45,7 +57,7 @@ body {
     position : absolute;
     width: 30%;
     height: 40%;
-    left : 62%;
+    left : 61%;
     top : 10%;
     text-align: center;
 }
@@ -69,7 +81,7 @@ body {
 
 #clickerContainer{
     position : absolute;
-    left: 41%;
+    left: 40%;
     top :10%;
     text-align: center;
     background : #6c5ce7;
@@ -81,7 +93,7 @@ body {
 #upgradesContainer{
     position : absolute;
     background : #0984e3;
-    left : 41%;
+    left : 40%;
     top : 50%;
     width : 20%;
     height : 25%;
@@ -93,7 +105,7 @@ body {
 #imageContainer{
     position : absolute;
     background : #0984e3;
-    left : 10%;
+    left : 9%;
     top : 5%;
     width : 30%;
     height : 70%;
@@ -108,7 +120,7 @@ body {
     height: 4%;
     border-radius: 5px;
     text-align: center;
-    left: 41%;
+    left: 40%;
     top: 5%;
     overflow: hidden;
 }
@@ -120,7 +132,7 @@ body {
     height: 15.9%;
     border-radius: 5px;
     text-align: center;
-    left: 62%;
+    left: 61%;
     top: 59%;
 }
 
@@ -132,12 +144,25 @@ body {
 #video{
     position : relative;
     top: 0%;
+    border-radius: 5px;
 }
 
 #news{
     position : relative;
     right: 0;
     white-space: pre;
+}
+
+.upgradeIcon{
+    background : #2d3436;
+    border-radius : 10px;
+    position : relative;
+    top: 0px;
+    padding : 5px;
+}
+
+.upgradeIconContainer{
+    padding: 16px;
 }
 
 .buildingStats{

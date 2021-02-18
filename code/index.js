@@ -1,9 +1,10 @@
 const body = $("body");
-const baseBuildingCostArray = [10, 75, 750, 5000, 50000, 500000, 10000000, 100000000, 1000000000]
-const baseBuildingOutputArray = [0.1, 1, 20, 100, 750, 10000, 100000, 5000000, 100000000]
+const baseBuildingCostArray = [15, 100, 1000, 10000, 150000, 1500000, 20000000, 300000000, 5000000000]
+const baseBuildingOutputArray = [0.1, 1, 10, 50, 250, 1500, 8000, 50000, 250000]
 const baseBuildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 const baseBuildingCostMulitplierArray = [1.0035, 1.004,  1.0045, 1.004, 1.0035,  1.003,  1.0025,  1.002,  1.0015]
 const buyAmount = [1, 10, 100, "max"];
+
 const buttonClickSound = new Audio("sounds/buttonClick.wav");
 const errorSound = new Audio("sounds/error.mp3")
 const click1 = new Audio("sounds/click1.wav");
@@ -30,8 +31,50 @@ let buildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 let buildingCostMulitplierArray = baseBuildingCostMulitplierArray
 let currentOutput = 0;
 let clicks = 0;
-let selectedBuyAmount = 0;
+let selectedBuyAmount = "1";
 let unlockedBuildings = [0, 1];
+
+const clickUpgradeArray = [50, 750, 10000, 50000, 150000, 1000000]
+let clickUpgradeArrayIndex = 0;
+
+const buildingUpgrades = {
+    0 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/rocketIcon.png"
+    },
+    1 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/science.png"
+    },
+    2 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/refinery.png"
+    },
+    3 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/assemblyBuilding.png"
+    },
+    4 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/launchpad.png"
+    },
+    5 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/prteam.png"
+    },
+    6 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/satellite.png"
+    },
+    7 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/spacestation.png"
+    },
+    8 : {
+        target : [10, 25, 50, 75, 100],
+        icon : "../images/moonbase.png"
+    }
+}
 
 
 setInterval(updateMuskbucks, 500)
@@ -41,6 +84,30 @@ setInterval(function(){
     calculateOutput();
     checkBuildingUnlocks();
 }, 1000);
+
+function checkUpgrades(){
+    if(clicks >= clickUpgradeArray[clickUpgradeArrayIndex]){
+        clickUpgradeArrayIndex ++;
+    }
+    $.each(buildingCountArray, function(index, value){
+        if(value >= buildingUpgrades[index].target[0]){
+            let newUpgradeDiv = $("<div>")
+            newUpgradeDiv.css("height", "50px").css("width", "50px").css("position", "relative").css("float", "left").addClass("upgradeIconContainer")
+            let newUpgrade = $("<img>")
+            newUpgrade.addClass("upgradeIcon button").css("width", "50px").css("height", "50px");
+            newUpgrade.attr("src", buildingUpgrades[index].icon)
+            newUpgradeDiv.appendTo("#upgradesContainer")
+            newUpgrade.appendTo(newUpgradeDiv)
+            buildingUpgrades[index].target.shift();
+            newUpgrade.click(function(){
+                buttonClickSound.play();
+                buildingOutputArray[index] = buildingOutputArray[index] * 2;
+                updateCountAndCost();
+                newUpgradeDiv.remove();
+            })  
+        }
+    })
+}
 
 function buyBuilding(buildingId, howMany, e){
     let baseCost = baseBuildingCostArray[parseInt(buildingId) -1]
@@ -68,10 +135,6 @@ function buyBuilding(buildingId, howMany, e){
         console.log("not enough money")
         $("#incomeStats").addClass("flashRed");
     }
-}
-
-function checkUpgrades(){
-    
 }
 
 function random(max, min){
@@ -129,6 +192,11 @@ function updateMuskbucks(){
 
 $("document").ready(function(){
     updateCountAndCost();
+
+    $(".buyAmount").click(function(e){
+        selectedBuyAmount = e.target.textContent;
+        console.log(e.target.textContent);
+    })
 
     $(document).mousemove(function(e){
         mouseX = e.pageX;
@@ -214,10 +282,11 @@ $("document").ready(function(){
     })
 
     $(".building").click(function(e){
-        if(typeof buyAmount[selectedBuyAmount] === "number"){
-            buyBuilding(e.target.id, buyAmount[selectedBuyAmount], e);
+        if(buyAmount.includes(parseInt(selectedBuyAmount))){
+            buyBuilding(e.target.id, parseInt(selectedBuyAmount), e);
         }else{
             console.log("Max buy not yet added")
         }     
     })
+
 })
