@@ -12,13 +12,27 @@
     <title>Rocket Clicker</title>
 </head>
 <body>
+    <!-- <audio autoplay volume loop>
+        <source src="sounds/background.mp3" type="audio/mp3">
+    </audio> -->
     <div id="mainContainer">
         <div id="imageContainer">
-            <canvas id="myChart" width="400" height="400"></canvas>
-            Image
+            <span id="videoTitle">Perseverance Landing</span>
+            <iframe id="video" width="370" height="250" src="https://www.youtube.com/embed/iPXuw8SJfFI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <p id="videoDescription">
+                DESCRIPTION:<br>
+                Mission Name: Mars 2020<br>
+                Rover Name: Perseverance<br>
+                Main Job: Seek signs of ancient life and collect samples of rock and regolith (broken rock and soil) for possible return to Earth.<br>
+                Launch: July 30, 2020<br>
+                Landing: Feb. 18, 2021<br>
+                Landing Site: Jezero Crater, Mars<br>
+                Tech Demo: The Mars Helicopter is a technology demonstration, hitching a ride on the Perseverance rover.<br>
+            </p>
         </div>
         <div id="newsContainer">
-            News
+            <span id="news"></span>
+            
         </div>
         <div id="clickerContainer">
             <img src="images/rocket.png" id="clicker"></img>

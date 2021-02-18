@@ -1,21 +1,24 @@
 const body = $("body");
 let lastMoonBucks = 0;
 let moonBucks = 0;
-const baseBuildingCostArray = [10, 50, 500, 5000, 50000, 500000, 10000000, 100000000, 1000000000]
-const baseBuildingOutputArray = [1, 15, 80, 800, 4000, 13500, 40000, 130000, 3255006]
+const baseBuildingCostArray = [10, 75, 750, 5000, 50000, 500000, 10000000, 100000000, 1000000000]
+const baseBuildingOutputArray = [0.1, 1, 20, 100, 750, 10000, 100000, 5000000, 100000000]
 const baseBuildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-let   baseBuildingCostMulitplierArray = [1.07, 1.15, 1.14, 1.13, 1.12, 1.11, 1.10, 1.09, 1.08]
+let   baseBuildingCostMulitplierArray = [1.0035, 1.004,  1.0045, 1.004, 1.0035,  1.003,  1.0025,  1.002,  1.0015]
 let clickArray = [];
 let clickArrayIndex = 0;
 const buyAmount = [1, 10, 100, "max"];
+
+let newsArray = [];
+let newsIndex = 0;
 
 const clickSound = new Audio("sounds/click.wav");
 
 
 let buildingCostArray = baseBuildingCostArray;
 let buildingOutputArray = baseBuildingOutputArray;
-let buildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-let buildingCostMulitplierArray = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11]
+let buildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+let buildingCostMulitplierArray = baseBuildingCostMulitplierArray
 let currentOutput = 0;
 let clicks = 0;
 let selectedBuyAmount = 0;
@@ -27,29 +30,28 @@ setInterval(updateMoonbucks, 500)
 setInterval(function(){
     checkUpgrades();
     calculateOutput();
-    
+    checkBuildingUnlocks();
 }, 1000);
 
 function buyBuilding(buildingId, howMany){
     let baseCost = baseBuildingCostArray[parseInt(buildingId) -1]
     let totalCost = calculateFutureCost(buildingId, howMany);
     if(moonBucks >= totalCost){
-        buildingCostArray[buildingId -1] += baseBuildingCostArray[buildingId - 1] * (baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1];
+        if(buildingCountArray[buildingId -1] !== 0){
+            buildingCostArray[buildingId -1] = Math.ceil(baseCost * ((baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1]) * howMany);
+        }else{
+            console.log("test")
+            buildingCostArray[buildingId -1] = Math.ceil((baseCost * ((baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1]) * howMany) + baseCost / `${buildingId + 1}0`);
+        }
+        
         buildingCountArray[buildingId - 1] += howMany;
         moonBucks -= totalCost;
         updateMoonbucks()
         updateCountAndCost();
 
-        // if(buildingCountArray[buildingId - 1] % 10 === 0){
-        //     let newMultiplier = (buildingCountArray[buildingId - 1] / 10) / (300 - ((buildingId - 1) * 10));
-        //     buildingCostMulitplierArray[buildingId - 1] = newMultiplier + baseBuildingCostMulitplierArray[buildingId - 1];
-        // }
-
-        if(buildingCostArray[buildingId -1] >= (baseBuildingCostArray[buildingId] * 0.50)){
-            unlockBuilding(parseInt(buildingId) + 1);
-        }
     }else{
         console.log("not enough money")
+        $("#incomeStats").addClass("flashRed");
     }
 }
 
@@ -71,12 +73,14 @@ function calculateFutureCost(buildingId, howMany){
     }
 }
 
-function unlockBuilding(buildingId){
-    let buildingToUnlockId = parseInt(buildingId) + 1;
-    unlockedBuildings.push(buildingToUnlockId);
-    $(`#${buildingToUnlockId}`).attr("hidden", false);
-    $(`#${buildingId}`).attr("hidden", false);
-    
+function checkBuildingUnlocks(){
+    $.each(baseBuildingCostArray, function(index, value){
+        if(value <= moonBucks){
+            let buildingToUnlockId = index + 3;
+            unlockedBuildings.push(index);
+            $(`#${buildingToUnlockId}`).attr("hidden", false);
+        }
+    })
 }
 
 function calculateOutput(){
@@ -84,8 +88,8 @@ function calculateOutput(){
     $.each(buildingCountArray, function(index, value){
         output += value * buildingOutputArray[index]
     })
-    //currentOutput = output;
-    //moonBucks += output;
+    currentOutput = output;
+    moonBucks += output;
 }
 
 function updateCountAndCost(){
@@ -107,11 +111,32 @@ function updateMoonbucks(){
 $("document").ready(function(){
     updateCountAndCost();
 
-    $.get("https://ll.thespacedevs.com/2.1.0/event/", function(data){
+    function animateNews(){
+        $("#news").animate({
+        right: '200%'},
+        {
+            duration : 30000, 
+            easing : "linear",   
+            complete : function(){
+                $("#news").css("right", "-100%")
+            }
+        });
+    }
+
+    $.get("https://lldev.thespacedevs.com/2.1.0/event/", function(data){
        // console.log(data.results);
         $.each(data.results, function(index, value){
-            console.log(value.description)
+            newsArray.push(value.description);
         })
+        $("#news").text(newsArray[newsIndex])
+        $("#news").css("right", "-100%")
+        animateNews();
+        setInterval(function(){
+            console.log("test")
+            newsIndex++;
+            $("#news").text(newsArray[newsIndex])
+            animateNews();
+        }, 30000)  
     })
 
     $("#clicker").click(function(){
@@ -121,11 +146,22 @@ $("document").ready(function(){
         updateMoonbucks()
         clickSound.play();
         $("#clicker").addClass("flash");
+        let moneySign = $("<div>");
+        moneySign.text("$$$").css("position", "relative")
+        moneySign.text("$$$").css("z-index", "1")
+        moneySign.text("$$$").css("pointer-events", "none")
+        $("#clickerContainer").append(moneySign)
     })
 
     $("#clicker").on("animationend", function(){
         $("#clicker").removeClass("flash");
     })
+
+    $("#incomeStats").on("animationend", function(){
+        $("#incomeStats").removeClass("flashRed");
+    })
+
+    
 
     $(".building").click(function(e){
         if(typeof buyAmount[selectedBuyAmount] === "number"){
