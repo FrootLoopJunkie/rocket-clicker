@@ -34,44 +34,66 @@ let clicks = 0;
 let selectedBuyAmount = "1";
 let unlockedBuildings = [0, 1];
 
-const clickUpgradeArray = [50, 750, 10000, 50000, 150000, 1000000]
-let clickUpgradeArrayIndex = 0;
+const mouseUpgrades = {
+    target : [100, 1000, 50000, 500000],
+    cost : [50, 500, 6500, 25000],
+    multiplier : [2, 3, 5, 7],
+    icon : "../images/mousepointer.png"
+}
 
 const buildingUpgrades = {
     0 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [500, 5000, 50000, 150000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/rocketIcon.png"
     },
     1 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [5000, 50000, 150000, 1500000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/science.png"
     },
     2 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [25000, 250000, 1200000, 35000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/refinery.png"
     },
     3 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [75000, 420000, 2400000, 56000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/assemblyBuilding.png"
     },
     4 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [700000, 3700000, 68000000, 540000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/launchpad.png"
     },
     5 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [16000000, 100000000, 760000000, 13000000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/prteam.png"
     },
     6 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [125000000, 950000000, 49000000000, 542000000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/satellite.png"
     },
     7 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [1200000000, 37000000000, 367000000000, 1350000000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/spacestation.png"
     },
     8 : {
-        target : [10, 25, 50, 75, 100],
+        target : [10, 50, 100, 500],
+        cost : [50000000000, 420000000000, 1200000000000, 25000000000000],
+        multiplier : [2, 3, 5, 10],
         icon : "../images/moonbase.png"
     }
 }
@@ -86,8 +108,20 @@ setInterval(function(){
 }, 1000);
 
 function checkUpgrades(){
-    if(clicks >= clickUpgradeArray[clickUpgradeArrayIndex]){
-        clickUpgradeArrayIndex ++;
+    if(clicks >= mouseUpgrades.target[0]){
+        let newUpgradeDiv = $("<div>")
+        newUpgradeDiv.css("height", "50px").css("width", "50px").css("position", "relative").css("float", "left").addClass("upgradeIconContainer")
+        let newUpgrade = $("<img>")
+        newUpgrade.addClass("upgradeIcon button").css("width", "50px").css("height", "50px");
+        newUpgrade.attr("src", mouseUpgrades.icon)
+        newUpgradeDiv.appendTo("#upgradesContainer")
+        newUpgrade.appendTo(newUpgradeDiv)
+        mouseUpgrades.target.shift();
+        newUpgrade.click(function(){
+            if(muskbucks >= mouseUpgrades.cost[0]){
+                mouseUpgrades.cost.shift();
+            }
+        });
     }
     $.each(buildingCountArray, function(index, value){
         if(value >= buildingUpgrades[index].target[0]){
@@ -100,10 +134,15 @@ function checkUpgrades(){
             newUpgrade.appendTo(newUpgradeDiv)
             buildingUpgrades[index].target.shift();
             newUpgrade.click(function(){
-                buttonClickSound.play();
-                buildingOutputArray[index] = buildingOutputArray[index] * 2;
-                updateCountAndCost();
-                newUpgradeDiv.remove();
+                if(muskbucks >= buildingUpgrades[index].cost[0]){
+                    muskbucks -= buildingUpgrades[index].cost[0];
+                    buildingUpgrades[index].cost.shift();
+                    buttonClickSound.play();
+                    buildingOutputArray[index] = (baseBuildingOutputArray[index] * buildingUpgrades[index].multiplier[0]).toFixed(2);
+                    buildingUpgrades[index].multiplier.shift();
+                    updateCountAndCost();
+                    newUpgradeDiv.remove();
+                }
             })  
         }
     })
@@ -121,7 +160,6 @@ function buyBuilding(buildingId, howMany, e){
         if(buildingCountArray[buildingId -1] !== 0){
             buildingCostArray[buildingId -1] = Math.ceil(baseCost * ((baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1]) * howMany);
         }else{
-            console.log("test")
             buildingCostArray[buildingId -1] = Math.ceil((baseCost * ((baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1]) * howMany) + baseCost / `${buildingId + 1}0`);
         }
         
@@ -132,7 +170,6 @@ function buyBuilding(buildingId, howMany, e){
 
     }else{
         errorSound.play();
-        console.log("not enough money")
         $("#incomeStats").addClass("flashRed");
     }
 }
@@ -146,7 +183,8 @@ function calculateFutureCost(buildingId, howMany){
     let cost = 0;
     if(howMany > 1){
         for(let i = 0; i < howMany; i++){
-            (baseCost * ((1.15 ** (buildingCountArray[buildingId - 1] + howMany)) - (1.15 ** buildingCountArray[buildingId - 1])) / 0.15)
+           let cost = Math.ceil(baseCost * ((baseBuildingCostMulitplierArray[buildingId - 1]) ** buildingCountArray[buildingId - 1]) * howMany);
+           return Math.round(cost);
         }
         return Math.round(cost);
     }else{
@@ -181,21 +219,22 @@ function updateCountAndCost(){
         let newBreak = $("<br>");
         let newBreak2 = $("<br>");
         let newBreak3 = $("<br>");
-        newTarget.empty().append(newBreak).append(`Count: ${buildingCountArray[value.id - 1]}`).append(newBreak3).append(`Cost: ${buildingCostArray[value.id - 1]}`).append(newBreak2).append(`Increase Output by: ${buildingOutputArray[value.id - 1]} Mb/s`)
+        newTarget.empty().append(newBreak).append(`Owned: ${buildingCountArray[value.id - 1]}`).append(newBreak3).append(`Cost x${selectedBuyAmount}: $${(buildingCostArray[value.id - 1] * selectedBuyAmount).toLocaleString()}`).append(newBreak2).append(`Increase Output by: $${buildingOutputArray[value.id - 1]}/s`)
     })
 }
 
 function updateMuskbucks(){
     let newBreak = $("<br>");
-    $("#incomeStats").text(`Muskbucks: ${muskbucks.toFixed(2)}`).append(newBreak).append(`Current Output: ${currentOutput.toFixed(2)}`);
+    $("#incomeStats").text(`Muskbucks: ${muskbucks.toFixed(2)}`).append(newBreak).append(`Current Output: $${currentOutput.toFixed(2)}/s`);
 }
 
 $("document").ready(function(){
     updateCountAndCost();
 
     $(".buyAmount").click(function(e){
+        buttonClickSound.play();
         selectedBuyAmount = e.target.textContent;
-        console.log(e.target.textContent);
+        updateCountAndCost();
     })
 
     $(document).mousemove(function(e){
@@ -216,7 +255,6 @@ $("document").ready(function(){
     }
 
     $.get("https://lldev.thespacedevs.com/2.1.0/event/", function(data){
-       // console.log(data.results);
         $.each(data.results, function(index, value){
             newsArray.push(value.description);
         })
@@ -224,7 +262,6 @@ $("document").ready(function(){
         $("#news").css("right", "-100%")
         animateNews();
         setInterval(function(){
-            console.log("test")
             newsIndex++;
             $("#news").text(newsArray[newsIndex])
             animateNews();
@@ -285,7 +322,6 @@ $("document").ready(function(){
         if(buyAmount.includes(parseInt(selectedBuyAmount))){
             buyBuilding(e.target.id, parseInt(selectedBuyAmount), e);
         }else{
-            console.log("Max buy not yet added")
         }     
     })
 
