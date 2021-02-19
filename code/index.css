@@ -7,6 +7,7 @@
     font-family: 'Oswald', sans-serif;
     user-select: none;
     -webkit-user-drag: none;
+    font-size : 1rem;
 }
 
 body {
@@ -256,7 +257,7 @@ body {
 
 @keyframes flashRed{
     0% {color : #dfe6e9}
-    50% {color : red}
+    50% {color : orange}
     100% {color : #dfe6e9}
 }
 
