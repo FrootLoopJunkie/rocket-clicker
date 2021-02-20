@@ -13,12 +13,10 @@ const click3 = new Audio("sounds/click3.mp3");
 
 let clickSoundArray = [click1, click2, click3]
 
-let skinArray = ["images/rocket.png"]
+let starTargetOutput = 1;
 
-let lastMuskbucks = 0;
+let skinArray = ["images/rocket.png"]
 let muskbucks = 0;
-let clickArray = [];
-let clickArrayIndex = 0;
 let newsArray = [];
 let newsIndex = 0;
 
@@ -34,14 +32,14 @@ let clicks = 0;
 let selectedBuyAmount = "1";
 let unlockedBuildings = [0, 1];
 
-const mouseUpgrades = {
+let mouseUpgrades = {
     target : [100, 1000, 50000, 500000],
     cost : [50, 500, 6500, 25000],
     multiplier : [2, 3, 5, 7],
     icon : "../images/mousepointer.png"
 }
 
-const buildingUpgrades = {
+let buildingUpgrades = {
     0 : {
         target : [15, 75, 150, 500],
         cost : [500, 5000, 50000, 150000],
@@ -98,6 +96,9 @@ const buildingUpgrades = {
     }
 }
 
+let localStorage = window.localStorage;
+let savedData = {};
+
 
 setInterval(updateMuskbucks, 500)
 
@@ -106,7 +107,25 @@ setInterval(function(){
     calculateOutput();
     checkBuildingUnlocks();
     updateCostColor();
+    generateStars()
 }, 1000);
+
+function save(){
+    savedData["saves"] = {};
+    savedData["saves"]["muskbucks"] = muskbucks;
+    savedData["saves"]["currentOutput"] = currentOutput;
+    savedData["saves"]["clicks"] = clicks;
+    savedData["saves"]["buildingCountArray"] = buildingCountArray;
+    savedData["saves"]["unlockedBuildings"] = unlockedBuildings;
+    savedData["saves"]["buildingUpgrades"] = buildingUpgrades;
+    savedData["saves"]["mouseUpgrades"] = mouseUpgrades;
+    savedDataString = JSON.stringify(savedData);
+    localStorage.setItem("lastSave", savedDataString)
+}
+
+function load(){
+
+}
 
 function checkUpgrades(){
     if(clicks >= mouseUpgrades.target[0]){
@@ -234,6 +253,37 @@ function updateCostColor(){
     });
 }
 
+function generateStars(){
+    if(currentOutput >= starTargetOutput){
+        console.log("test")
+        let starDiv = $("<div class='starDiv'>");
+        let starImg = $("<img class='starImg' src='../images/star.png'>")
+        starImg.appendTo(starDiv);
+        starDiv.appendTo("#clickerContainer").css("left", `${random(0, 100)}%`).animate({
+            top: '105%'},
+        {
+            duration : random(3000, 9000), 
+            easing : "linear",   
+            complete : function(){
+                starAnimation(starDiv)
+            }
+        });
+        starTargetOutput = starTargetOutput * 1.5;
+    }
+}
+
+function starAnimation(target){
+    target.removeAttr('style').animate({
+        top: '105%'},
+    {
+        duration : random(3000, 9000), 
+        easing : "linear",   
+        complete : function(){
+            starAnimation(target)
+        }
+    });
+}
+
 function updateMuskbucks(){
     let newBreak = $("<br>");
     $("#incomeStats").text(`Muskbucks: $${muskbucks.toFixed(2)}`).append(newBreak).append(`Current Output: $${currentOutput.toFixed(2)}/s`);
@@ -282,7 +332,6 @@ $("document").ready(function(){
 
     $("#clicker").click(function(){
         clicks++;
-        lastMuskbucks = muskbucks;
         muskbucks++;
         updateMuskbucks()
         clickSoundArray[random(1, 3)].play();
