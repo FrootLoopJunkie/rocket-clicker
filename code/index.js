@@ -3,7 +3,8 @@ const baseBuildingCostArray = [15, 100, 500, 2000, 7000, 50000, 1000000, 1500000
 const baseBuildingOutputArray = [0.2, 1, 4, 9, 23, 99, 1117, 25119, 257531]
 const baseBuildingCountArray = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 const baseBuildingCostMulitplierArray = [1.15, 1.17,  1.18, 1.19, 1.20,  1.21,  1.22,  1.23,  1.24]
-const buyAmount = [1, 10, 100, "max"];
+const buyAmount = [1, 10, 100, "max", "maxCalculated"];
+let maxBuyArray = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const buttonClickSound = new Audio("sounds/buttonClick.wav");
 const errorSound = new Audio("sounds/error.mp3")
@@ -13,7 +14,7 @@ const click3 = new Audio("sounds/click3.mp3");
 
 let clickSoundArray = [click1, click2, click3]
 
-let starTargetOutput = 1;
+let starTargetOutput = 0.5;
 
 let skinArray = ["images/rocket.png"]
 let muskbucks = 0;
@@ -30,11 +31,13 @@ let buildingCostMulitplierArray = baseBuildingCostMulitplierArray
 let currentOutput = 0;
 let clicks = 0;
 let selectedBuyAmount = "1";
-let unlockedBuildings = [0, 1];
+let unlockedBuildings = [1, 2];
 
+
+let mouseMultiplier = 1;
 let mouseUpgrades = {
     target : [100, 1000, 50000, 500000],
-    cost : [50, 500, 6500, 25000],
+    cost : [250, 2500, 25000, 250000],
     multiplier : [2, 3, 5, 7],
     icon : "../images/mousepointer.png"
 }
@@ -108,6 +111,7 @@ setInterval(function(){
     checkBuildingUnlocks();
     updateCostColor();
     generateStars()
+    save();
 }, 1000);
 
 function save(){
@@ -119,12 +123,35 @@ function save(){
     savedData["saves"]["unlockedBuildings"] = unlockedBuildings;
     savedData["saves"]["buildingUpgrades"] = buildingUpgrades;
     savedData["saves"]["mouseUpgrades"] = mouseUpgrades;
+    savedData["saves"]["mouseMultiplier"] = mouseMultiplier;
     savedDataString = JSON.stringify(savedData);
-    localStorage.setItem("lastSave", savedDataString)
+    localStorage.setItem("savedData", savedDataString);
 }
 
 function load(){
+    let loadedData = localStorage.getItem("savedData");
+    let parsedData = JSON.parse(loadedData)
+    muskbucks = parsedData.saves.muskbucks;
+    currentOutput = parsedData.saves.currentOutput;
+    clicks = parsedData.saves.clicks;
+    buildingCountArray = parsedData.saves.buildingCountArray;
+    unlockedBuildings = parsedData.saves.unlockedBuildings;
+    buildingUpgrades = parsedData.saves.buildingUpgrades;
+    mouseMultiplier = parsedData.saves.mouseMultiplier;
 
+    $.each(unlockedBuildings, function(index, value){
+        if(unlockedBuildings.includes(index + 1)){
+            let buildingToUnlockId = index + 1;
+            $(`#${buildingToUnlockId}`).attr("hidden", false);
+        }
+    })
+
+    checkUpgrades();
+    calculateOutput();
+    updateCostColor();
+    generateStars();
+    updateCountAndCost();
+    save();
 }
 
 function checkUpgrades(){
@@ -140,6 +167,11 @@ function checkUpgrades(){
         newUpgrade.click(function(){
             if(muskbucks >= mouseUpgrades.cost[0]){
                 mouseUpgrades.cost.shift();
+                muskbucks -= mouseUpgrades.cost[0];
+                buttonClickSound.play();
+                mouseMultiplier = mouseUpgrades.multiplier.shift();
+                updateCountAndCost();
+                newUpgradeDiv.remove();
             }
         });
     }
@@ -169,7 +201,15 @@ function checkUpgrades(){
 }
 
 function buyBuilding(buildingId, howMany, e){
-    let totalCost = calculateFutureCost(buildingId, howMany);
+    let totalCost = 0;
+
+    if(selectedBuyAmount === "Max" || selectedBuyAmount === "maxCalculated"){
+        totalCost = calculateFutureCost(buildingId, maxBuyArray[buildingId - 1]);
+        howMany = maxBuyArray[buildingId - 1];
+    }else{
+        totalCost = calculateFutureCost(buildingId, howMany);
+    }
+
     if(muskbucks >= totalCost){
         buttonClickSound.play();
         $(e.target).addClass("buttonClick")
@@ -196,6 +236,30 @@ function calculateFutureCost(buildingId, howMany){
     let buildingCount = buildingCountArray[buildingId - 1];
     let totalCost = 0;
     let cost = 0;
+
+    if(selectedBuyAmount === "Max"){
+        let iterations = 0;
+        $.each(buildingCountArray, function(index, value){
+            let buildingCount = 0;
+            let iterations = 0;
+            for(;totalCost < muskbucks; ){
+                cost = Math.ceil(baseBuildingCostArray[index] * buildingCostMulitplierArray[index] **  ((value + buildingCount) / 1.5));
+                buildingCount ++;
+                totalCost += cost;
+                iterations++;
+            }
+            if(iterations !== 0){
+                maxBuyArray[index] = (iterations - 1)
+            }else{
+                maxBuyArray[index] = (iterations)
+            }
+            
+            
+        })
+        selectedBuyAmount = "maxCalculated"
+        return false;
+    }
+
     for(i = 0; i < howMany; i++){
         cost = Math.ceil(baseCost * buildingCostMulitplierArray[buildingId - 1] **  ((buildingCount) / 1.5));
         buildingCount ++;
@@ -206,9 +270,9 @@ function calculateFutureCost(buildingId, howMany){
 
 function checkBuildingUnlocks(){
     $.each(baseBuildingCostArray, function(index, value){
-        if(value <= muskbucks){
+        if(value <= muskbucks && !unlockedBuildings.includes(index + 3)){
             let buildingToUnlockId = index + 3;
-            unlockedBuildings.push(index);
+            unlockedBuildings.push(index + 3);
             $(`#${buildingToUnlockId}`).attr("hidden", false);
         }
     })
@@ -226,36 +290,72 @@ function calculateOutput(){
 function updateCountAndCost(){
     let target = $(".building");
     $.each(target, function(index, value){
-        let countSpan = $("<span>")
-        let costSpan = $(`<span id='costSpan${value.id}'>`).text(`Cost x${selectedBuyAmount}: $${calculateFutureCost(value.id, parseInt(selectedBuyAmount)).toLocaleString(undefined,{'minimumFractionDigits':2,'maximumFractionDigits':2})}`)
-        let newTarget = ($(`#${value.id} > span`))
-        let newBreak = $("<br>");
-        let newBreak2 = $("<br>");
-        let newBreak3 = $("<br>");
-        newTarget.empty().append(newBreak).append(`Owned: ${buildingCountArray[value.id - 1]}`).append(newBreak3).append(costSpan).append(newBreak2).append(`Increase Output by: $${buildingOutputArray[value.id - 1]}/s`)
-        if(calculateFutureCost(value.id, parseInt(selectedBuyAmount)) <= muskbucks){
-            costSpan.css("color", "LimeGreen");
-        }else{
-            costSpan.css("color", "orange");
+        
+
+        if(selectedBuyAmount !== "Max" && selectedBuyAmount !== "maxCalculated"){
+            let countSpan = $("<span>")
+            let costSpan = $(`<span id='costSpan${value.id}'>`).text(`Cost x${selectedBuyAmount}: $${calculateFutureCost(value.id, parseInt(selectedBuyAmount)).toLocaleString(undefined,{'minimumFractionDigits':2,'maximumFractionDigits':2})}`)
+            let newTarget = ($(`#${value.id} > span`))
+            let newBreak = $("<br>");
+            let newBreak2 = $("<br>");
+            let newBreak3 = $("<br>");
+            newTarget.empty().append(newBreak).append(`Owned: ${buildingCountArray[value.id - 1]}`).append(newBreak3).append(costSpan).append(newBreak2).append(`Increase Output by: $${buildingOutputArray[value.id - 1]}/s`)
+            if(calculateFutureCost(value.id, parseInt(selectedBuyAmount)) <= muskbucks){
+                costSpan.css("color", "LimeGreen");
+            }else{
+                costSpan.css("color", "orange");
+            }
+
+        }else if(selectedBuyAmount === "Max" || selectedBuyAmount === "maxCalculated"){
+            //calculateFutureCost(value.id, parseInt(selectedBuyAmount));
+            
+            $.each(maxBuyArray, function(index2, value2){
+                let countSpan = $("<span>")
+                let costSpan = $(`<span id='costSpan${index2}'>`).text(`Cost x${maxBuyArray[index2 - 1]}: $${calculateFutureCost(index2, maxBuyArray[index2 - 1]).toLocaleString(undefined,{'minimumFractionDigits':2,'maximumFractionDigits':2})}`)
+                let newTarget = ($(`#${index2} > span`))
+                let newBreak = $("<br>");
+                let newBreak2 = $("<br>");
+                let newBreak3 = $("<br>");
+                newTarget.empty().append(newBreak).append(`Owned: ${buildingCountArray[index2 - 1]}`).append(newBreak3).append(costSpan).append(newBreak2).append(`Increase Output by: $${buildingOutputArray[index2 - 1]}/s`)
+                if(calculateFutureCost(index2, maxBuyArray[index2 - 1]) <= muskbucks && maxBuyArray[index2 - 1] !== 0){
+                    costSpan.css("color", "LimeGreen");
+                }else{
+                    costSpan.css("color", "orange");
+                }
+            })
         }
+
+        
+
     })
 }
 
 function updateCostColor(){
     let target = $(".building");
-    $.each(target, function(index, value){
-        let costSpan = $(`#costSpan${value.id}`);
-        if(calculateFutureCost(value.id, parseInt(selectedBuyAmount)) <= muskbucks){
-            costSpan.css("color", "LimeGreen");
-        }else{
-            costSpan.css("color", "orange");
-        }
-    });
+    if(selectedBuyAmount !== "Max" && selectedBuyAmount !== "maxCalculated"){
+        $.each(target, function(index, value){
+            let costSpan = $(`#costSpan${value.id}`);
+            if(calculateFutureCost(value.id, parseInt(selectedBuyAmount)) <= muskbucks){
+                costSpan.css("color", "LimeGreen");
+            }else{
+                costSpan.css("color", "orange");
+            }
+        });
+    }else{
+        $.each(maxBuyArray, function(index2, value2){
+            let costSpan = $(`#costSpan${index2}`);
+            if(calculateFutureCost(index2, maxBuyArray[index2 - 1]) <= muskbucks &&  maxBuyArray[index2 - 1] !== 0){
+                costSpan.css("color", "LimeGreen");
+            }else{
+                costSpan.css("color", "orange");
+            }
+        });
+    }
+
 }
 
 function generateStars(){
     if(currentOutput >= starTargetOutput){
-        console.log("test")
         let starDiv = $("<div class='starDiv'>");
         let starImg = $("<img class='starImg' src='../images/star.png'>")
         starImg.appendTo(starDiv);
@@ -290,7 +390,20 @@ function updateMuskbucks(){
     $("title").text(`Rocket Clicker: $${muskbucks.toFixed(2)}`)
 }
 
+function addDollarSigns(){
+    dollarString = ""
+    for(let i = 0; i < mouseMultiplier; i++){
+        dollarString += "$"
+    }
+    return dollarString;
+}
+
 $("document").ready(function(){
+    
+    if(localStorage.length !== 0){
+        load();
+    }
+    
     updateCountAndCost();
 
     $(".buyAmount").click(function(e){
@@ -332,19 +445,19 @@ $("document").ready(function(){
 
     $("#clicker").click(function(){
         clicks++;
-        muskbucks++;
+        muskbucks += 1 * mouseMultiplier;
         updateMuskbucks()
         clickSoundArray[random(1, 3)].play();
         $("#clicker").addClass("flash");
         let moneySign = $("<div>");
-        moneySign.text("$");
+        moneySign.text(addDollarSigns());
         moneySign.css("position", "absolute")
         moneySign.css("z-index", "1")
         moneySign.css("pointer-events", "none")
-        moneySign.css("color", "blue")
+        moneySign.css("color", "LimeGreen")
         moneySign.css("left", mouseX)
         moneySign.css("top", mouseY)
-        moneySign.css("transform", "scale(3)")
+        moneySign.css("transform", "scale(2)")
         moneySign.addClass("shiftUp")
         moneySign.on("animationend", function(){
             this.remove();
@@ -380,10 +493,7 @@ $("document").ready(function(){
     })
 
     $(".building").click(function(e){
-        if(buyAmount.includes(parseInt(selectedBuyAmount))){
-            buyBuilding(e.target.id, parseInt(selectedBuyAmount), e);
-        }else{
-        }     
+        buyBuilding(e.target.id, selectedBuyAmount, e);
     })
 
 })
