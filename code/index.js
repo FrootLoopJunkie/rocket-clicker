@@ -35,6 +35,9 @@ let unlockedBuildings = [1, 2];
 
 
 let mouseMultiplier = 1;
+
+let unclaimedUpgrades = [];
+
 let mouseUpgrades = {
     target : [100, 1000, 50000, 500000],
     cost : [250, 2500, 25000, 250000],
@@ -138,6 +141,7 @@ function load(){
     unlockedBuildings = parsedData.saves.unlockedBuildings;
     buildingUpgrades = parsedData.saves.buildingUpgrades;
     mouseMultiplier = parsedData.saves.mouseMultiplier;
+    mouseUpgrades = parsedData.saves.mouseUpgrades;
 
     $.each(unlockedBuildings, function(index, value){
         if(unlockedBuildings.includes(index + 1)){
@@ -155,26 +159,34 @@ function load(){
 }
 
 function checkUpgrades(){
-    if(clicks >= mouseUpgrades.target[0]){
-        let newUpgradeDiv = $("<div>")
-        newUpgradeDiv.css("height", "50px").css("width", "50px").css("position", "relative").css("float", "left").addClass("upgradeIconContainer")
-        let newUpgrade = $("<img>")
-        newUpgrade.addClass("upgradeIcon button").css("width", "50px").css("height", "50px");
-        newUpgrade.attr("src", mouseUpgrades.icon)
-        newUpgradeDiv.appendTo("#upgradesContainer")
-        newUpgrade.appendTo(newUpgradeDiv)
-        mouseUpgrades.target.shift();
-        newUpgrade.click(function(){
-            if(muskbucks >= mouseUpgrades.cost[0]){
-                mouseUpgrades.cost.shift();
-                muskbucks -= mouseUpgrades.cost[0];
-                buttonClickSound.play();
-                mouseMultiplier = mouseUpgrades.multiplier.shift();
-                updateCountAndCost();
-                newUpgradeDiv.remove();
-            }
-        });
-    }
+    $.each(mouseUpgrades.target, function (key, value){
+        if(clicks >= value){
+            console.log("huh")
+            let newUpgradeDiv = $("<div>")
+            newUpgradeDiv.css("height", "50px").css("width", "50px").css("position", "relative").css("float", "left").addClass("upgradeIconContainer")
+            let newUpgrade = $("<img>")
+            newUpgrade.addClass("upgradeIcon button").css("width", "50px").css("height", "50px").text(value);
+            newUpgrade.attr("src", mouseUpgrades.icon)
+            newUpgradeDiv.appendTo("#upgradesContainer")
+            newUpgrade.appendTo(newUpgradeDiv)
+            unclaimedUpgrades["mouseUpgrade" + mouseUpgrades.target[0]] = {};
+            unclaimedUpgrades["mouseUpgrade" + mouseUpgrades.target[0]]["cost"] = mouseUpgrades.cost[0];
+            unclaimedUpgrades["mouseUpgrade" + mouseUpgrades.target[0]]["multiplier"] = mouseUpgrades.multiplier[0];
+            unclaimedUpgrades["mouseUpgrade" + mouseUpgrades.target[0]]["icon"] = mouseUpgrades.icon;
+            mouseUpgrades.target.shift();
+            mouseUpgrades.cost.shift();
+            mouseUpgrades.multiplier.shift();
+            newUpgrade.click(function(){
+                if(muskbucks >= mouseUpgrades.cost[0]){
+                    muskbucks -= mouseUpgrades.cost[0];
+                    buttonClickSound.play();
+                    updateCountAndCost();
+                    newUpgradeDiv.remove();
+                }
+            });
+        }
+    })
+
     $.each(buildingCountArray, function(index, value){
         if(value >= buildingUpgrades[index].target[0]){
             let newUpgradeDiv = $("<div>")
@@ -184,14 +196,18 @@ function checkUpgrades(){
             newUpgrade.attr("src", buildingUpgrades[index].icon)
             newUpgradeDiv.appendTo("#upgradesContainer")
             newUpgrade.appendTo(newUpgradeDiv)
+            unclaimedUpgrades[index + "buildingUpgrade" + buildingUpgrades[index].target[0]] = {};
+            unclaimedUpgrades[index + "buildingUpgrade" + buildingUpgrades[index].target[0]]["cost"] = buildingUpgrades[index].cost[0];
+            unclaimedUpgrades[index + "buildingUpgrade" + buildingUpgrades[index].target[0]]["multiplier"] = buildingUpgrades[index].multiplier[0];
+            unclaimedUpgrades[index + "buildingUpgrade" + buildingUpgrades[index].target[0]]["icon"] = buildingUpgrades[index].icon;
             buildingUpgrades[index].target.shift();
+            buildingUpgrades[index].cost.shift();
+            buildingUpgrades[index].multiplier.shift();
             newUpgrade.click(function(){
                 if(muskbucks >= buildingUpgrades[index].cost[0]){
                     muskbucks -= buildingUpgrades[index].cost[0];
-                    buildingUpgrades[index].cost.shift();
                     buttonClickSound.play();
                     buildingOutputArray[index] = (baseBuildingOutputArray[index] * buildingUpgrades[index].multiplier[0]).toFixed(2);
-                    buildingUpgrades[index].multiplier.shift();
                     updateCountAndCost();
                     newUpgradeDiv.remove();
                 }
@@ -216,7 +232,7 @@ function buyBuilding(buildingId, howMany, e){
         $(e.target).on("animationend", function(){
             $(e.target).removeClass("buttonClick");
         })
-        buildingCountArray[buildingId - 1] += howMany;
+        buildingCountArray[buildingId - 1] += parseInt(howMany);
         muskbucks -= totalCost;
         updateMuskbucks()
         updateCountAndCost();
