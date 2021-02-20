@@ -242,6 +242,7 @@ function calculateFutureCost(buildingId, howMany){
         $.each(buildingCountArray, function(index, value){
             let buildingCount = 0;
             let iterations = 0;
+            totalCost = 0;
             for(;totalCost < muskbucks; ){
                 cost = Math.ceil(baseBuildingCostArray[index] * buildingCostMulitplierArray[index] **  ((value + buildingCount) / 1.5));
                 buildingCount ++;
