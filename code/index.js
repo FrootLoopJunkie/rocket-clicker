@@ -16,6 +16,9 @@ let clickSoundArray = [click1, click2, click3]
 
 let starTargetOutput = 0.5;
 
+let currentVersion = "";
+let latestVersion = "1.0a"
+
 let skinArray = ["images/rocket.png"]
 let muskbucks = 0;
 let newsArray = [];
@@ -143,6 +146,7 @@ function save(){
     savedData["saves"]["mouseUpgrades"] = mouseUpgrades;
     savedData["saves"]["mouseMultiplier"] = mouseMultiplier;
     savedData["saves"]["unclaimedUpgrades"] = unclaimedUpgrades;
+    savedData["saves"]["currentVersion"] = currentVersion;
     savedDataString = JSON.stringify(savedData);
     localStorage.setItem("savedData", savedDataString);
 }
@@ -159,6 +163,7 @@ function load(){
     buildingUpgrades = parsedData.saves.buildingUpgrades;
     mouseMultiplier = parsedData.saves.mouseMultiplier;
     mouseUpgrades = parsedData.saves.mouseUpgrades;
+    currentVersion = parsedData.saves.currentVersion;
     unclaimedUpgrades = parsedData.saves.unclaimedUpgrades;
     unloadedUpgrades = JSON.parse(JSON.stringify(parsedData.saves.unclaimedUpgrades));
 
@@ -309,7 +314,7 @@ function calculateFutureCost(buildingId, howMany){
                 totalCost += cost;
                 iterations++;
             }
-            if(iterations !== 0){
+            if(iterations !== 1){
                 maxBuyArray[index] = (iterations - 1)
             }else{
                 maxBuyArray[index] = (iterations)
@@ -453,8 +458,21 @@ function addDollarSigns(){
 $("document").ready(function(){
     
     if(localStorage.length !== 0){
+        let loadedData = localStorage.getItem("savedData");
+        let parsedData = JSON.parse(loadedData)
+        currentVersion = parsedData.saves.currentVersion;
+        if(currentVersion !== latestVersion){
+            alert(`This save is from game version ${currentVersion}. Due to major game changes you will have to restart in order to continue playing the game.`)
+            autosave = false;
+            localStorage.clear();
+            currentVersion = latestVersion;
+            save();
+            location.reload();
+        }
         load();
     }
+
+
     
     updateCountAndCost();
 
