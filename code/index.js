@@ -39,6 +39,10 @@ let clicks = 0;
 let selectedBuyAmount = "1";
 let unlockedBuildings = [1, 2];
 
+let saveData = {
+    
+};
+
 
 let mouseMultiplier = 1;
 
@@ -547,14 +551,28 @@ $("document").ready(function(){
     })
 
     $("#skinsSelector").click(function(){
-        let selection = skinArray[random(0, 2)]
-        $("#clicker").attr("src", selection)
+        let visible = $("#skinSelectorContainer").attr("hidden");
+        if(visible){
+            $("#skinSelectorContainer").attr("hidden", false);
+        }else{
+            $("#skinSelectorContainer").attr("hidden", true);
+        }
+        //$("#clicker").attr("src", selection)
     })
 
     $("#marsClickerRewardButton").click(function(){
         $("#marsClickerReward").remove();
-        skinArray.push("images/mars.png");
-        $("#clicker").attr("src", "images/mars.png")
+        $("#clicker").attr("src", `images/mars.png`)
+        let clone = $("#placeholderSkinButton").clone()
+        clone.children().attr("src", `images/mars.png`).click(function(e){
+            $("#clicker").attr("src", `${$(e.target).attr("src")}`)
+        });
+        $("#skinSelectorBackground").append(clone);
+       
+    })
+
+    $(".skinButtonImage").click(function(e){
+        $("#clicker").attr("src", `${$(e.target).attr("src")}`)
     })
 
     $("#clicker").on("animationend", function(){
