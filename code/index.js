@@ -456,21 +456,24 @@ function addDollarSigns(){
 }
 
 $("document").ready(function(){
-    
+
+
     if(localStorage.length !== 0){
         let loadedData = localStorage.getItem("savedData");
         let parsedData = JSON.parse(loadedData)
         currentVersion = parsedData.saves.currentVersion;
-        if(currentVersion !== latestVersion){
-            alert(`This save is from game version ${currentVersion}. Due to major game changes you will have to restart in order to continue playing the game.`)
-            autosave = false;
-            localStorage.clear();
-            currentVersion = latestVersion;
-            save();
-            location.reload();
-        }
         load();
     }
+
+    if(currentVersion !== latestVersion){
+        alert(`This save is from game version ${currentVersion}. Due to major game changes you will have to restart in order to continue playing the game.`)
+        autosave = false;
+        localStorage.clear();
+        currentVersion = latestVersion;
+        save();
+        location.reload();
+    }
+    
 
 
     
